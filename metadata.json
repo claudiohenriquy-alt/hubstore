@@ -1,0 +1,5 @@
+{
+  "name": "HubStore",
+  "description": "HubStore é um catálogo digital moderno, estilo vitrine, onde usuários podem visualizar produtos e comprá-los via PIX ou Cartão de Crédito através de um gateway de pagamento.",
+  "requestFramePermissions": []
+}
