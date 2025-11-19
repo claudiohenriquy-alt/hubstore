@@ -8,7 +8,7 @@ export const PRODUCTS: Product[] = [
     shortDescription: "Assistente virtual com inteligência artificial avançada para automação.",
     longDescription: "O Robo AI-Assist é a solução definitiva para automação inteligente...",
     price: 299.90,
-    imageUrl: "https://images.unsplash.com/photo-1542744095-2911cdfb2211?w=800&q=80",
+    imageUrl: "https://br.freepik.com/imagem-ia-premium/robo-ai-para-papel-de-parede_72179628.htm",
     checkoutUrlCard: "https://www.abacatepay.com/pay/bill_dfMWypuPaPcm5mgpbkWmw3T4",
     file: "/files/robo-ai-assist.zip"
   },
