@@ -96,7 +96,10 @@ export default function HeroBlackFriday({ navigateTo }: HeroBlackFridayProps) {
                     <h3 className="mt-6 text-2xl font-bold text-white">Robo AI-Assist</h3>
                     <p className="text-gray-400">Automação - IA</p>
                     
-                    <p className="my-4 text-6xl font-extrabold text-neon-cyan" style={{ textShadow: '0 0 15px #00FFFF' }}>R$29,90</p>
+                    <div className="my-4 flex flex-col items-center gap-1">
+                        <p className="text-2xl font-semibold text-gray-500 line-through">R$ 99,90</p>
+                        <p className="text-6xl font-extrabold text-neon-cyan" style={{ textShadow: '0 0 15px #00FFFF' }}>R$29,90</p>
+                    </div>
                     
                     <button
                         onClick={() => navigateTo('products')}
