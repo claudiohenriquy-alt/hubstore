@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from "react";
+import { Page } from "../App";
 
 const SALE_END = "2025-12-01T23:59:59-03:00";
 
@@ -12,7 +13,11 @@ function getTimeRemaining(targetIso: string) {
   return { total, days, hours, minutes, seconds };
 }
 
-export default function HeroBlackFriday() {
+interface HeroBlackFridayProps {
+  navigateTo: (page: Page) => void;
+}
+
+export default function HeroBlackFriday({ navigateTo }: HeroBlackFridayProps) {
   const [time, setTime] = useState(getTimeRemaining(SALE_END));
   useEffect(() => {
     const t = setInterval(() => {
@@ -94,10 +99,7 @@ export default function HeroBlackFriday() {
                     <p className="my-4 text-6xl font-extrabold text-neon-cyan" style={{ textShadow: '0 0 15px #00FFFF' }}>R$29,90</p>
                     
                     <button
-                        onClick={() => {
-                            const el = document.getElementById('produtos');
-                            if (el) el.scrollIntoView({ behavior: 'smooth' });
-                        }}
+                        onClick={() => navigateTo('products')}
                         className="w-full mt-2 px-6 py-4 rounded-2xl bg-black text-white font-bold text-xl border-2 border-neon-purple shadow-neon-purple hover:bg-neon-purple/20 transition-all duration-300"
                     >
                         Ver Ofertas
