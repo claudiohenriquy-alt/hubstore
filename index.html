@@ -18,9 +18,13 @@
             colors: {
               'brand-blue': '#1E90FF',
               'neon-blue': '#00BFFF',
+              'neon-cyan': '#00FFFF',
+              'neon-purple': '#A020F0',
             },
             boxShadow: {
               'neon': '0 0 5px theme(colors.neon-blue), 0 0 20px theme(colors.neon-blue / 0.6)',
+              'neon-purple': '0 0 5px #A020F0, 0 0 15px #A020F0, 0 0 25px #A020F0',
+              'neon-cyan': '0 0 5px #00FFFF, 0 0 15px #00FFFF, 0 0 25px #00FFFF',
             },
             keyframes: {
               fadeIn: {
@@ -31,10 +35,15 @@
                 '0%': { transform: 'translateY(50px)', opacity: '0' },
                 '100%': { transform: 'translateY(0)', opacity: '1' },
               },
+               'border-glow': {
+                '0%, 100%': { 'box-shadow': '0 0 8px #A020F0, 0 0 16px #A020F0, 0 0 24px #00FFFF' },
+                '50%': { 'box-shadow': '0 0 12px #00FFFF, 0 0 24px #00FFFF, 0 0 32px #A020F0' },
+              }
             },
             animation: {
               'fade-in': 'fadeIn 0.5s ease-out forwards',
               'slide-in-up': 'slideInUp 0.5s ease-out forwards',
+              'border-glow': 'border-glow 5s ease-in-out infinite',
             },
           }
         }
@@ -47,7 +56,9 @@
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
     "react": "https://aistudiocdn.com/react@^19.2.0",
     "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
-    "qrcode": "https://aistudiocdn.com/qrcode@^1.5.4"
+    "qrcode": "https://aistudiocdn.com/qrcode@^1.5.4",
+    "@vercel/node": "https://aistudiocdn.com/@vercel/node@^5.5.8",
+    "@sendgrid/mail": "https://aistudiocdn.com/@sendgrid/mail@^8.1.6"
   }
 }
 </script>

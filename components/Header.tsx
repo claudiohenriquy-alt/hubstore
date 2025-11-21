@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 const Header: React.FC = () => {
@@ -11,7 +10,7 @@ const Header: React.FC = () => {
                 <span className="text-xl font-semibold text-white">HubStore</span>
             </a>
             <nav className="hidden md:flex items-center gap-8 text-gray-400 font-medium">
-                <a href="#destaques" className="hover:text-white transition-colors">Produtos</a>
+                <a href="#produtos" className="hover:text-white transition-colors">Produtos</a>
                 <a href="#" className="hover:text-white transition-colors">Sobre</a>
                 <a href="#" className="hover:text-white transition-colors">Contato</a>
             </nav>
