@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Product } from '../types';
 import { PRODUCTS } from '../constants';
 import ProductCard from '../components/ProductCard';
 import HeroBlackFriday from "../components/HeroBlackFriday";
 import { Page } from '../App';
+import GuaranteeSection from '../components/GuaranteeSection';
 
 interface HomePageProps {
     navigateTo: (page: Page) => void;
@@ -41,6 +41,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigateTo, openModal }) => {
                         ))}
                     </div>
                 </section>
+                <GuaranteeSection />
             </div>
         </>
     );
