@@ -15,7 +15,9 @@
     "qrcode": "^1.5.4",
     "@vercel/node": "^5.5.8",
     "@sendgrid/mail": "^8.1.6",
-    "crypto": "^1.0.1"
+    "crypto": "^1.0.1",
+    "path": "^0.12.7",
+    "fs": "^0.0.1-security"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
