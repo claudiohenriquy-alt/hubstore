@@ -1,0 +1,13 @@
+// api/products.ts
+export const PRODUCTS = [
+  { id: 1, name: "Robô AI-Assist", price: 19.90, driveLink: "https://drive.google.com/drive/folders/1GyCxNqQcufTzNnnNXrQnZ48peo4ReNYp?usp=drive_link", imageUrl: "/mnt/data/A_promotional_digital_graphic_design_advertisement.png" },
+  { id: 2, name: "Lista de Fornecedores Premium", price: 14.90, driveLink: "https://drive.google.com/file/d/1ttquBeNbiulk_b7qGcvh-xlIziM2Et61/view?usp=drive_link", imageUrl: "/mnt/data/A_promotional_digital_graphic_design_advertisement.png" },
+  { id: 3, name: "Catálogo de Produtos Exclusivos", price: 12.90, driveLink: "https://drive.google.com/file/d/1Q7sSpORi9t0bNlQD6gIBgaW9swMQNXz5/view?usp=drive_link", imageUrl: "/mnt/data/A_promotional_digital_graphic_design_advertisement.png" },
+  { id: 4, name: "Pacote Completo – Envio de SMS em Massa", price: 16.90, driveLink: "https://drive.google.com/drive/folders/1NCCGrQc_vuALu2vwRcMsOGykIzpWefcV?usp=drive_link", imageUrl: "/mnt/data/A_promotional_digital_graphic_design_advertisement.png" },
+  { id: 5, name: "Jarvee – Automação Completa", price: 24.90, driveLink: "https://drive.google.com/drive/folders/1ASj94tBCNd3OJ-4k1A4b2wNfbjg6YyIK?usp=drive_link", imageUrl: "/mnt/data/A_promotional_digital_graphic_design_advertisement.png" },
+  { id: 6, name: "TubeViews – YouTube Booster", price: 9.90, driveLink: "https://drive.google.com/drive/folders/17yplvC8leZncMnWs2w49AioaRoqrM_Hs?usp=drive_link", imageUrl: "/mnt/data/A_promotional_digital_graphic_design_advertisement.png" },
+  { id: 7, name: "Socinator – Automação Profissional", price: 22.90, driveLink: "https://drive.google.com/drive/folders/1bt4ONHmg6ah_QvWKXAjkjQT0esS6G9jw?usp=drive_link", imageUrl: "/mnt/data/A_promotional_digital_graphic_design_advertisement.png" },
+  { id: 8, name: "Jarvee – Gerenciador de Redes (PC)", price: 19.90, driveLink: "https://drive.google.com/drive/folders/1zziJUtoTyG7jaYAHRU6XeRdVtvYDdMX2?usp=drive_link", imageUrl: "/mnt/data/A_promotional_digital_graphic_design_advertisement.png" },
+  { id: 9, name: "Instabot Pro – Automação Instagram", price: 12.90, driveLink: "https://drive.google.com/drive/folders/1uMAgTrE0LIHTiq0xK_Lc1Ua0VXIfZ94K?usp=drive_link", imageUrl: "/mnt/data/A_promotional_digital_graphic_design_advertisement.png" },
+  { id: 10, name: "Insta Extractor + Licença", price: 14.90, driveLink: "https://drive.google.com/drive/folders/193VTdlaZseLVOZ5H0zCJa3Sdah6kpdlH?usp=drive_link", imageUrl: "/mnt/data/A_promotional_digital_graphic_design_advertisement.png" }
+];

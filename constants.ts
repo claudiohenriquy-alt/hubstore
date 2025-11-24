@@ -9,7 +9,7 @@ export const PRODUCTS: Product[] = [
         longDescription: "Nosso Robo AI-Assist é uma ferramenta de automação inteligente projetada para maximizar sua eficiência. Ele gerencia interações com clientes, qualifica leads e fecha vendas, tudo no piloto automático. Perfeito para escalar seu negócio digital sem aumentar a carga de trabalho.",
         price: 29.90,
         imageUrl: "https://images.unsplash.com/photo-1677756119517-756a188d2d94?w=800&q=80",
-        checkoutUrlCard: "https://www.abacatepay.com/pay/bill_UXUpcDyFJMxyWsNYuQsWWrG4"
+        checkoutUrlCard: "https://www.abacatepay.com/pay/SEU-LINK-AQUI-1"
     },
     {
         id: 2,
@@ -19,7 +19,7 @@ export const PRODUCTS: Product[] = [
         longDescription: "Tenha acesso a uma lista curada com os melhores fornecedores do mercado, nacionais e internacionais. Ideal para dropshipping e e-commerce, economize tempo e dinheiro encontrando parceiros de confiança para produtos de alta qualidade.",
         price: 14.90,
         imageUrl: "https://i.imgur.com/1Ta8BYg.png",
-        checkoutUrlCard: "https://www.abacatepay.com/pay/bill_UenRDqdfhqzSGBWUC0uKbkz2"
+        checkoutUrlCard: "https://www.abacatepay.com/pay/SEU-LINK-AQUI-2"
     },
     {
         id: 3,
@@ -29,7 +29,7 @@ export const PRODUCTS: Product[] = [
         longDescription: "Receba um catálogo completo com produtos digitais e físicos prontos para revenda. São itens de alta conversão, validados no mercado, para você começar a vender imediatamente. Inclui descrições, imagens e estratégias de venda.",
         price: 12.90,
         imageUrl: "https://images.unsplash.com/photo-1483058712412-4245e9b90334?w=800&q=80",
-        checkoutUrlCard: "https://www.abacatepay.com/pay/bill_Q6pK1dCQjbCmtTmqkYsXNmce"
+        checkoutUrlCard: "https://www.abacatepay.com/pay/SEU-LINK-AQUI-3"
     },
     {
         id: 4,
@@ -39,7 +39,7 @@ export const PRODUCTS: Product[] = [
         longDescription: "Alcance milhares de clientes em segundos. Nossa plataforma de envio de SMS em massa é ideal para promoções, notificações e engajamento. Fácil de usar, com alta taxa de entrega e relatórios detalhados para otimizar suas campanhas.",
         price: 16.90,
         imageUrl: "https://images.unsplash.com/photo-1614624532983-4ce03382d63d?w=800&q=80",
-        checkoutUrlCard: "https://www.abacatepay.com/pay/bill_rWsaUeHhAU2YWzJCAx4FuJJZ"
+        checkoutUrlCard: "https://www.abacatepay.com/pay/SEU-LINK-AQUI-4"
     },
     {
         id: 5,
@@ -49,7 +49,7 @@ export const PRODUCTS: Product[] = [
         longDescription: "O Jarvee é uma das ferramentas mais poderosas do mundo para crescimento automatizado nas redes sociais. Ideal para social medias, afiliados, gestores de tráfego e empreendedores que querem escalar resultados sem esforço. Ele realiza interações automáticas, gerencia múltiplas contas, agenda postagens, aumenta seguidores, engajamento e tráfego de forma inteligente. Crescimento rápido, seguro e otimizado para negócios digitais.",
         price: 24.90,
         imageUrl: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800&q=80",
-        checkoutUrlCard: "https://www.abacatepay.com/pay/bill_CTQjZbs4PQzhSHeeFT4Hytuf"
+        checkoutUrlCard: "https://www.abacatepay.com/pay/SEU-LINK-AQUI"
     },
     {
         id: 6,
@@ -59,7 +59,7 @@ export const PRODUCTS: Product[] = [
         longDescription: "O TubeViews é essencial para criadores de conteúdo e afiliados que dependem de vídeos para vender. Ele distribui visualizações, melhora a retenção, aumenta o alcance e faz seus vídeos performarem melhor no algoritmo do YouTube. Perfeito para quem quer acelerar monetização ou dar um salto na autoridade digital.",
         price: 9.90,
         imageUrl: "https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?w=800&q=80",
-        checkoutUrlCard: "https://www.abacatepay.com/pay/bill_xH42Dmx3eppX1U2TgytGLzEF"
+        checkoutUrlCard: "https://www.abacatepay.com/pay/SEU-LINK-AQUI"
     },
     {
         id: 7,
@@ -69,7 +69,7 @@ export const PRODUCTS: Product[] = [
         longDescription: "O Socinator permite automatizar tarefas em várias redes sociais simultaneamente: Instagram, YouTube, Twitter, Pinterest, LinkedIn e muito mais. Perfeito para agências, social medias e empreendedores que querem escalar conteúdo e interações com agilidade. Interface simples e poderosa, ideal para alto desempenho.",
         price: 22.90,
         imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80",
-        checkoutUrlCard: "https://www.abacatepay.com/pay/bill_szwW0CtCY6UcHGMXtDBHRHsC"
+        checkoutUrlCard: "https://www.abacatepay.com/pay/SEU-LINK-AQUI"
     },
     {
         id: 8,
@@ -79,7 +79,7 @@ export const PRODUCTS: Product[] = [
         longDescription: "Versão dedicada do Jarvee focada em gerenciamento estratégico de perfis e campanhas. Ideal para quem administra muitas contas e precisa de automação confiável e robusta. Aumente eficiência, reduza trabalho manual e mantenha todas as redes crescendo juntas.",
         price: 19.90,
         imageUrl: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&q=80",
-        checkoutUrlCard: "https://www.abacatepay.com/pay/bill_jsEDARKXN3MdnrfQEwNkkyMf"
+        checkoutUrlCard: "https://www.abacatepay.com/pay/SEU-LINK-AQUI"
     },
     {
         id: 9,
@@ -89,7 +89,7 @@ export const PRODUCTS: Product[] = [
         longDescription: "O Instabot Pro automatiza completamente o Instagram: segue, curte, comenta, envia mensagens, segmenta públicos e interage com potenciais clientes no piloto automático. Um dos bots mais eficientes para quem trabalha com vendas, moda, estética, marketing, tráfego pago e influência digital.",
         price: 12.90,
         imageUrl: "https://images.unsplash.com/photo-1611262588024-d12430b98920?w=800&q=80",
-        checkoutUrlCard: "https://www.abacatepay.com/pay/bill_1K6qbFfzzRCNufKdYK3bkpDD"
+        checkoutUrlCard: "https://www.abacatepay.com/pay/SEU-LINK-AQUI"
     },
     {
         id: 10,
@@ -99,6 +99,6 @@ export const PRODUCTS: Product[] = [
         longDescription: "O Insta Extractor é uma ferramenta poderosa para coletar dados valiosos e segmentados do Instagram. Extraia emails, seguidores, perfis de nicho e listas completas prontas para campanhas, anúncios e automações. Ideal para negócios digitais, dropshipping, infoprodutores e social medias.",
         price: 14.90,
         imageUrl: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&q=80",
-        checkoutUrlCard: "https://www.abacatepay.com/pay/bill_6fMaMkSCYp6LNHs2JwMQWHJr"
+        checkoutUrlCard: "https://www.abacatepay.com/pay/SEU-LINK-AQUI"
     },
   ];
