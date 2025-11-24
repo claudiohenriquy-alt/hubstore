@@ -1,115 +1,131 @@
-// api/webhook.ts (Next.js / Vercel)
+// api/webhook.ts
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { PRODUCTS } from './products';
 import sgMail from '@sendgrid/mail';
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY as string);
-
-function extractProductIdFromEvent(body: any) {
-  // tenta vários caminhos comuns
-  if (body.product_id) return body.product_id;
-  if (body.data?.product_id) return body.data.product_id;
-  if (body.data?.metadata?.product_id) return body.data.metadata.product_id;
-  if (body.metadata?.product_id) return body.metadata.product_id;
-  if (body.data?.metadata?.id) return body.data.metadata.id;
-  // se AbacatePay enviar custom field 'reference' or 'external_reference'
-  if (body.data?.metadata?.external_reference) return body.data.metadata.external_reference;
-  return null;
+// Configure a chave da API do SendGrid a partir das variáveis de ambiente
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+} else {
+  console.warn("SENDGRID_API_KEY não está definida. O envio de e-mails está desabilitado.");
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+// Helper para encontrar um valor em um objeto, tentando múltiplos caminhos comuns
+const findValue = (obj: any, key: string): string | null => {
+  const pathsToTry = [
+    [key],
+    ['data', key],
+    ['data', 'metadata', key],
+    ['metadata', key],
+    ['customer', key],
+    ['data', 'customer', key],
+  ];
 
-  try {
-    const event = req.body;
-
-    // --- Opcional: valida o secret do webhook
-    const webhookSecret = process.env.WEBHOOK_SECRET;
-    if (webhookSecret) {
-      // AbacatePay pode enviar o secret no body or header — aceitamos ambos para compatibilidade
-      const secretInBody = event.secret || event.data?.secret || event.data?.metadata?.secret;
-      const secretHeader = req.headers['x-abacate-signature'] || req.headers['x-webhook-secret'];
-      if (!(secretInBody === webhookSecret || secretHeader === webhookSecret)) {
-        // não aborta com 401 caso AbacatePay não envie; se quiser mais rígido, retorne 401
-        console.warn('Webhook secret mismatch (if AbacatePay does not send secret, ignore this).');
-        // continue — se quiser bloquear: return res.status(401).json({ error: 'Invalid secret' });
+  for (const path of pathsToTry) {
+    let current = obj;
+    for (const part of path) {
+      if (current && typeof current === 'object' && part in current) {
+        current = current[part];
+      } else {
+        current = null;
+        break;
       }
     }
-
-    // --- Checa status do pagamento: depende do payload da AbacatePay
-    // Aceitamos 'paid', 'charge.paid', 'paid: true' etc.
-    const isPaid =
-      event.status === 'paid' ||
-      event.type === 'charge.paid' ||
-      event.data?.status === 'paid' ||
-      event.data?.paid === true ||
-      event.paid === true;
-
-    if (!isPaid) {
-      // apenas acknowledge
-      return res.status(200).json({ message: 'Evento recebido (não pago) — ignorado' });
+    if (current !== null && current !== undefined) {
+      return String(current);
     }
-
-    // --- determinar e-mail do cliente
-    const email =
-      event.customer_email ||
-      event.data?.customer_email ||
-      event.data?.billing_email ||
-      event.data?.metadata?.customer_email ||
-      event.customer?.email ||
-      event.data?.customer?.email;
-
-    if (!email) {
-      return res.status(400).json({ error: 'E-mail do cliente não encontrado no webhook payload' });
-    }
-
-    // --- determinar produto
-    const productId = extractProductIdFromEvent(event) || event.data?.metadata?.product_id || event.data?.product_id;
-    if (!productId) {
-      // se não vier product_id, tente buscar por referência (reference id)
-      console.warn('product_id não encontrado no payload, verifique metadata no link de pagamento');
-      // Ainda assim podemos enviar um e-mail geral — aqui devolvemos OK mas pedimos intervenção
-      return res.status(400).json({ error: 'product_id não encontrado no payload' });
-    }
-
-    const product = PRODUCTS.find(p => String(p.id) === String(productId) || String(p.id) === String(Number(productId)));
-    if (!product) {
-      return res.status(404).json({ error: 'Produto não cadastrado no servidor' });
-    }
-
-    // --- montar e enviar e-mail pelo SendGrid
-    const downloadUrl = product.driveLink;
-    const successPage = `${process.env.SITE_ORIGIN || ''}/success.html`;
-
-    const msg = {
-      to: email,
-      from: process.env.EMAIL_FROM as string,
-      subject: `Seu pedido: ${product.name} — Link de download`,
-      html: `
-        <div style="font-family:Inter,system-ui,Arial; color:#111;">
-          <div style="max-width:600px;margin:0 auto;padding:20px;border-radius:8px;background:#0b0b0b;color:#fff;">
-            <img src="${product.imageUrl}" alt="${product.name}" style="width:120px;height:auto;border-radius:8px;object-fit:cover;margin-bottom:12px;" />
-            <h2 style="color:#38bdf8;margin:0 0 8px 0;">Compra Confirmada — ${product.name}</h2>
-            <p style="color:#d1d5db;margin:0 0 12px 0;">Obrigado pela compra! Seu produto está pronto para download.</p>
-            <a href="${downloadUrl}" style="display:inline-block;padding:12px 20px;background:#3B82F6;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">Baixar agora</a>
-            <p style="color:#94a3b8;margin-top:12px;font-size:13px;">Se o link não abrir, copie e cole no navegador:</p>
-            <pre style="background:#071025;padding:8px;border-radius:6px;color:#93c5fd;overflow:auto">${downloadUrl}</pre>
-            <hr style="border:none;border-top:1px solid rgba(255,255,255,0.04);margin:16px 0;" />
-            <p style="color:#94a3b8;font-size:12px;">Se preferir, acesse a página: <a href="${successPage}" style="color:#c7f9ff;">Ver pedido</a></p>
-            <p style="color:#94a3b8;font-size:12px;margin-top:8px;">Suporte: responda este e-mail ou acesse contato no site.</p>
-          </div>
-        </div>
-      `
-    };
-
-    await sgMail.send(msg);
-
-    // opcional: registrar em DB ou Google Sheets (não implementado aqui)
-
-    return res.status(200).json({ message: 'E-mail de download enviado com sucesso' });
-
-  } catch (err) {
-    console.error('Erro no webhook:', err);
-    return res.status(500).json({ error: 'Erro interno', details: String(err) });
   }
+  return null;
+};
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+    return res.status(405).send('Method Not Allowed');
+  }
+
+  const event = req.body;
+  const webhookSecret = process.env.WEBHOOK_SECRET;
+
+  // 1. Validar o "secret" para garantir que a requisição é do AbacatePay
+  if (webhookSecret) {
+    const signature = req.headers['x-abacate-signature'] || findValue(event, 'secret');
+    if (signature !== webhookSecret) {
+      console.warn('Webhook secret inválido recebido. A requisição será ignorada.');
+      // Responde com sucesso para não indicar a falha ao gateway, mas não processa.
+      return res.status(200).json({ success: true, message: 'Invalid signature. Request ignored.' });
+    }
+  }
+
+  const status = findValue(event, 'status');
+  const chargeId = findValue(event, 'id') || findValue(event, 'charge_id') || 'N/A';
+  
+  // 2. Lidar com os diferentes status do pagamento
+  try {
+    switch (status) {
+      case 'paid':
+      case 'charge.paid': // Status comum em alguns gateways
+        console.log(`Pedido ${chargeId} atualizado para: { status: "pago", dataPagamento: ${Date.now()} }`);
+        
+        // Lógica de envio do produto por e-mail
+        if (!process.env.SENDGRID_API_KEY || !process.env.EMAIL_FROM) {
+            console.error("Configuração de e-mail incompleta. Não é possível enviar o produto.");
+            break;
+        }
+
+        const email = findValue(event, 'customer_email') || findValue(event, 'email');
+        const productId = findValue(event, 'product_id') || findValue(event, 'external_reference');
+
+        if (!email || !productId) {
+          console.error(`Webhook 'paid' para ${chargeId} sem email ou productId. Email: ${email}, ProductID: ${productId}`);
+          break; // Sai do switch, mas ainda retorna sucesso
+        }
+        
+        const product = PRODUCTS.find(p => String(p.id) === String(productId));
+        if (!product) {
+          console.error(`Produto com ID ${productId} não encontrado.`);
+          break;
+        }
+
+        const msg = {
+          to: email,
+          from: process.env.EMAIL_FROM,
+          subject: `✅ Seu pedido foi aprovado: ${product.name}`,
+          html: `
+            <div style="font-family: Inter, system-ui, Arial; color: #e5e7eb; max-width: 600px; margin: auto; background-color: #0A0A0A; padding: 24px; border-radius: 12px; border: 1px solid #27272a;">
+              <h1 style="color: #34d399; font-size: 24px;">Pagamento Confirmado!</h1>
+              <p style="font-size: 16px; line-height: 1.6;">Olá! Seu pagamento para o produto <strong>${product.name}</strong> foi aprovado com sucesso.</p>
+              <p style="font-size: 16px; line-height: 1.6;">Clique no botão abaixo para acessar seu conteúdo imediatamente:</p>
+              <a href="${product.driveLink}" style="display: inline-block; background-color: #10b981; color: #ffffff; padding: 12px 24px; margin: 20px 0; text-decoration: none; border-radius: 8px; font-weight: bold;">Baixar Produto Agora</a>
+              <p style="font-size: 14px; color: #9ca3af;">Se o botão não funcionar, copie e cole este link no seu navegador:</p>
+              <p style="font-size: 14px; color: #60a5fa; word-break: break-all;">${product.driveLink}</p>
+              <hr style="border: none; border-top: 1px solid #27272a; margin: 24px 0;" />
+              <p style="font-size: 12px; color: #a1a1aa;">Obrigado por comprar na <strong>HubStore</strong>!</p>
+            </div>
+          `,
+        };
+        
+        await sgMail.send(msg);
+        console.log(`E-mail de entrega enviado para ${email} para o pedido ${chargeId}.`);
+        break;
+
+      case 'failed':
+      case 'charge.failed':
+        console.log(`Pedido ${chargeId} atualizado para: { status: "falhou" }`);
+        break;
+
+      case 'pending':
+        console.log(`Pedido ${chargeId} atualizado para: { status: "pendente" }`);
+        break;
+
+      default:
+        console.log(`Webhook com status não mapeado ('${status}') recebido para o pedido ${chargeId}.`);
+        break;
+    }
+  } catch (error) {
+    console.error(`Erro crítico ao processar webhook para o pedido ${chargeId}:`, error);
+  }
+
+  // 6. Retornar sempre { success: true } para o AbacatePay
+  return res.status(200).json({ success: true });
 }
