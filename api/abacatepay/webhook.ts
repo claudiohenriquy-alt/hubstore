@@ -1,93 +1,55 @@
 // /api/abacatepay/webhook.ts
 import { VercelRequest, VercelResponse } from "@vercel/node";
-import fs from "fs";
-import path from "path";
 import crypto from "crypto";
+import { PRODUCTS_BY_EXTERNAL } from "./products";
 
-const ORDERS_FILE = path.join("/tmp", "hubstore_orders.json");
+export const config = { api: { bodyParser: false } };
 
-// PRODUCTS mapping: externalId -> product info (use o mesmo externalId que mandamos em create-payment)
-const PRODUCTS: Record<string, { title: string; file: string }> = {
-  "prod_uuZ6PQFFPDcnJyeTmhaptcwd": {
-    title: "TubeViews – YouTube Booster",
-    file: "file:///mnt/data/e6058c8c-4a0c-4e58-9c1a-ffadeb195380.png"
-  }
-};
-
-const ABACATEPAY_PUBLIC_KEY = process.env.ABACATEPAY_PUBLIC_KEY || ""; // opcional, mas recomendado
 const MY_SECRET = process.env.WEBHOOK_SECRET || "";
+const ABACATEPAY_PUBLIC_KEY = process.env.ABACATEPAY_PUBLIC_KEY || "";
 
-/** leitura/escrita simples de orders (arquivo temporário) - apenas para testes */
-function readOrders() {
-  try {
-    if (!fs.existsSync(ORDERS_FILE)) return {};
-    return JSON.parse(fs.readFileSync(ORDERS_FILE, "utf8") || "{}");
-  } catch {
-    return {};
-  }
-}
-function saveOrders(obj: any) {
-  fs.writeFileSync(ORDERS_FILE, JSON.stringify(obj, null, 2));
-}
-
-/** verifica HMAC-SHA256 (base64) se ABACATEPAY_PUBLIC_KEY estiver definida */
-function verifyAbacateSignature(rawBody: Buffer, signatureFromHeader?: string) {
-  if (!ABACATEPAY_PUBLIC_KEY) return true; // se não configurada, pulamos a verificação (apenas para dev)
-  if (!signatureFromHeader) return false;
-  const expected = crypto.createHmac("sha256", ABACATEPAY_PUBLIC_KEY).update(rawBody).digest("base64");
+function verifyHmacIfConfigured(rawBuffer: Buffer, signature?: string) {
+  if (!ABACATEPAY_PUBLIC_KEY) return true; // pular HMAC em dev se não definida
+  if (!signature) return false;
+  const expected = crypto.createHmac("sha256", ABACATEPAY_PUBLIC_KEY).update(rawBuffer).digest("base64");
   const A = Buffer.from(expected, "utf8");
-  const B = Buffer.from(signatureFromHeader, "utf8");
+  const B = Buffer.from(signature, "utf8");
   if (A.length !== B.length) return false;
-  try {
-    return crypto.timingSafeEqual(A, B);
-  } catch {
-    return false;
-  }
+  try { return crypto.timingSafeEqual(A, B); } catch { return false; }
 }
-
-/**
- * IMPORTANT: desabilitamos o bodyParser do Next para garantir acesso ao raw body
- * necessário para validar HMAC se desejar.
- */
-export const config = {
-  api: {
-    bodyParser: false
-  }
-};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
-    res.setHeader("Allow", ["POST"]);
     return res.status(405).json({ error: "Method Not Allowed" });
   }
 
-  // 1) validar webhook secret via query string
-  const incomingSecret = (req.query?.webhookSecret as string) || null;
-  if (!incomingSecret || incomingSecret !== MY_SECRET) {
-    console.log("❌ Secret inválido no webhook");
+  // 1) validar secret (query string preferencial)
+  const incomingSecretQs = (req.query?.webhookSecret as string) || "";
+  const incomingSecretHeader = (req.headers["x-webhook-secret"] as string) || (req.headers["x-secret"] as string) || "";
+  if (!(incomingSecretQs === MY_SECRET || incomingSecretHeader === MY_SECRET)) {
+    console.log("❌ Secret inválido. qs:", incomingSecretQs, "hdr:", incomingSecretHeader);
     return res.status(401).json({ error: "Invalid webhook secret" });
   }
 
-  // 2) ler raw body (buffer)
+  // 2) ler raw body
   const rawBuffer: Buffer = await new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
-    req.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
+    req.on("data", c => chunks.push(Buffer.from(c)));
     req.on("end", () => resolve(Buffer.concat(chunks)));
-    req.on("error", (err) => reject(err));
+    req.on("error", e => reject(e));
   });
 
-  // 3) validar assinatura se houver ABACATEPAY_PUBLIC_KEY configurada
+  // 3) validar HMAC se configurada
   const signatureHeader = (req.headers["x-webhook-signature"] as string) || (req.headers["X-Webhook-Signature"] as string);
-  if (!verifyAbacateSignature(rawBuffer, signatureHeader)) {
-    console.log("❌ Assinatura HMAC inválida (ou ABACATEPAY_PUBLIC_KEY não configurada corretamente)");
+  if (!verifyHmacIfConfigured(rawBuffer, signatureHeader)) {
+    console.log("❌ Assinatura HMAC inválida (ou ABACATEPAY_PUBLIC_KEY incorreta)");
     return res.status(401).json({ error: "Invalid HMAC signature" });
   }
 
-  // 4) parse do body (após validação)
+  // 4) parse do body
   let body: any;
   try {
-    const rawBodyStr = rawBuffer.toString("utf8");
-    body = JSON.parse(rawBodyStr);
+    body = JSON.parse(rawBuffer.toString("utf8"));
   } catch (err) {
     console.log("⚠️ Erro ao parsear body do webhook:", err);
     return res.status(400).json({ error: "Bad request body" });
@@ -97,54 +59,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   console.log("🔔 Evento recebido:", event);
 
   if (event === "billing.paid") {
-    // A AbacatePay envia data.billing.products array -> externalId está aqui
     const productsArray = body?.data?.billing?.products || [];
-    if (!productsArray || productsArray.length === 0) {
-      console.log("⚠️ Nenhum produto encontrado no webhook");
-      return res.status(400).json({ error: "No product in billing" });
+    if (!Array.isArray(productsArray) || productsArray.length === 0) {
+      console.log("⚠️ Nenhum produto encontrado no billing:", JSON.stringify(body).slice(0, 500));
+      return res.status(400).json({ error: "No products in billing" });
     }
 
     const firstProduct = productsArray[0];
     const externalId = firstProduct?.externalId || firstProduct?.external_id || null;
     if (!externalId) {
-      console.log("⚠️ externalId não presente no produto:", JSON.stringify(firstProduct));
+      console.log("⚠️ externalId ausente no produto:", JSON.stringify(firstProduct));
       return res.status(400).json({ error: "Missing externalId" });
     }
 
     console.log("ExternalId recebido:", externalId);
 
-    // localizar produto no mapeamento
-    const item = PRODUCTS[externalId];
+    const item = PRODUCTS_BY_EXTERNAL[externalId];
     if (!item) {
-      console.log("Produto não encontrado no mapeamento:", externalId);
-      // Pode criar uma entrada no arquivo orders para reconciliação manual
+      console.log("Produto não mapeado para externalId:", externalId);
       return res.status(404).json({ error: "Product not found" });
     }
 
-    // marcar pedido como pago se salvo em /tmp (procura por reference_id em metadata se existir)
-    const possibleReference =
-      body?.data?.metadata?.reference_id ||
-      body?.data?.billing?.reference_id ||
-      body?.data?.metadata?.referenceId ||
-      null;
-
-    const orders = readOrders();
-    if (possibleReference && orders[possibleReference]) {
-      orders[possibleReference].status = "paid";
-      orders[possibleReference].paidAt = new Date().toISOString();
-      saveOrders(orders);
-      console.log("Pedido marcado como pago:", possibleReference);
-    } else {
-      console.log("Nenhum reference_id encontrado para marcar pedido; salvar para reconciliação se necessário");
-    }
-
-    // Aqui: lógica para liberar produto (envio de e-mail, criar link temporário, etc)
-    // Exemplo simples: log e devolve o link do arquivo (teste)
+    // Aqui: lógica para liberar produto (envio de e-mail / gerar link protegido / registro DB)
+    // Exemplo simples: retornar o link do Google Drive para teste
     console.log("✔️ Produto liberado:", item.title, item.file);
+
+    // Opcional: marque pedido como pago no arquivo / DB se tiver metadata.reference_id
+    // (omitir lógica de DB aqui por simplicidade)
 
     return res.status(200).json({ ok: true, delivered: item.file });
   }
 
-  // ignorar outros eventos
   return res.status(200).json({ ok: true, note: "Event ignored" });
 }
