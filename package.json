@@ -14,7 +14,8 @@
     "lucide-react": "^0.554.0",
     "qrcode": "^1.5.4",
     "@vercel/node": "^5.5.8",
-    "@sendgrid/mail": "^8.1.6"
+    "@sendgrid/mail": "^8.1.6",
+    "crypto": "^1.0.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
