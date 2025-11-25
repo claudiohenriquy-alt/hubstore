@@ -19,7 +19,7 @@ export const PRODUCTS: Product[] = [
         longDescription: "Nosso Robo AI-Assist é uma ferramenta de automação inteligente projetada para maximizar sua eficiência. Ele gerencia interações com clientes, qualifica leads e fecha vendas, tudo no piloto automático. Perfeito para escalar seu negócio digital sem aumentar a carga de trabalho.",
         price: 9.90,
         imageUrl: "https://images.unsplash.com/photo-1677756119517-756a188d2d94?w=800&q=80",
-        checkoutUrlCard: "https://abacatepay.com/pay/bill_0Fk6FxfXk1PBwFSNRNLpyKfm"
+        checkoutUrlCard: "https://abacatepay.com/pay/bill_e3epAPSrSHSzXsza4uB2qaQQ"
     },
       {
         id: 3,
