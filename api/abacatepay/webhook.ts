@@ -1,17 +1,12 @@
-// /api/abacatepay/webhook.ts  (PATCH - substitua o arquivo inteiro pelo conteúdo abaixo)
+// /api/abacatepay/webhook.ts
+
 import { VercelRequest, VercelResponse } from "@vercel/node";
-import crypto from "crypto";
 import sgMail from "@sendgrid/mail";
-import { PRODUCTS_BY_EXTERNAL } from "../products";
 
-// Set API key if present
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-} else {
-  console.warn("SENDGRID_API_KEY not configured in env vars");
-}
+sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
-export const config = { api: { bodyParser: false } };
+// Desativar bodyParser para ler RAW body? NÃO NECESSÁRIO — AbacatePay não usa HMAC
+// export const config = { api: { bodyParser: false } };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
@@ -19,98 +14,118 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(405).json({ error: "Method Not Allowed" });
     }
 
-    // QUICK LOGS: help debug in Vercel logs
-    console.log("Webhook invoked. headers:", {
-      secret_qs: req.query?.webhookSecret,
-      x_webhook_secret: req.headers["x-webhook-secret"] || req.headers["x-secret"],
-    });
-
+    // Verificar segredo
     const incomingSecret = req.query.webhookSecret;
     if (!incomingSecret || incomingSecret !== process.env.WEBHOOK_SECRET) {
-      console.log("Invalid webhook secret. incoming:", incomingSecret);
+      console.log("❌ Webhook secret inválido:", incomingSecret);
       return res.status(401).json({ error: "Invalid webhook secret" });
     }
 
-    // Read raw body for HMAC and parsing
-    const rawBuffer: Buffer = await new Promise((resolve, reject) => {
-      const chunks: Buffer[] = [];
-      req.on("data", (c) => chunks.push(Buffer.from(c)));
-      req.on("end", () => resolve(Buffer.concat(chunks)));
-      req.on("error", reject);
-    });
+    console.log("➡ Webhook recebido:", JSON.stringify(req.body).slice(0, 500));
 
-    let body: any;
-    try {
-      body = JSON.parse(rawBuffer.toString("utf8"));
-    } catch (e) {
-      console.log("Invalid JSON body:", e);
-      return res.status(400).json({ error: "Invalid JSON" });
+    const event = req.body?.event;
+    if (event !== "billing.paid") {
+      console.log("Evento ignorado:", event);
+      return res.status(200).json({ ok: true, ignored: event });
     }
 
-    console.log("Parsed webhook body event:", body?.event);
-
-    if (body?.event !== "billing.paid") {
-      return res.status(200).json({ ok: true, note: "event ignored" });
-    }
-
-    const productObj = body?.data?.billing?.products?.[0];
-    const externalId = productObj?.externalId || productObj?.external_id;
-    console.log("externalId from payload:", externalId);
+    // Captura externalId do produto
+    const externalId =
+      req.body?.data?.billing?.products?.[0]?.externalId ||
+      req.body?.data?.billing?.products?.[0]?.external_id;
 
     if (!externalId) {
-      console.log("Missing externalId in payload", JSON.stringify(productObj).slice(0, 500));
+      console.log("❌ sem externalId no webhook");
       return res.status(400).json({ error: "Missing externalId" });
     }
 
-    const item = PRODUCTS_BY_EXTERNAL[externalId];
-    if (!item) {
-      console.log("Product not mapped for externalId:", externalId);
+    console.log("📦 externalId:", externalId);
+
+    // Tabela de produtos
+    const PRODUCTS: Record<string, { title: string; file: string }> = {
+      prod_roboto: {
+        title: "Robô AI-Assist",
+        file: "https://drive.google.com/drive/folders/1GyCxNqQcufTzNnnNXrQnZ48peo4ReNYp"
+      },
+      prod_fornecedores: {
+        title: "Lista de Fornecedores Premium",
+        file: "https://drive.google.com/file/d/1ttquBeNbiulk_b7qGcvh-xlIziM2Et61/view"
+      },
+      prod_catalogo: {
+        title: "Catálogo de Produtos Exclusivos",
+        file: "https://drive.google.com/file/d/1Q7sSpORi9t0bNlQD6gIBgaW9swMQNXz5/view"
+      },
+      prod_sms: {
+        title: "Pacote Completo – Envio de SMS em Massa",
+        file: "https://drive.google.com/drive/folders/1NCCGrQc_vuALu2vwRcMsOGykIzpWefcV"
+      },
+      prod_jarvee: {
+        title: "Jarvee – Automação Completa",
+        file: "https://drive.google.com/drive/folders/1ASj94tBCNd3OJ-4k1A4b2wNfbjg6YyIK"
+      },
+      prod_tubeviews: {
+        title: "TubeViews – YouTube Booster",
+        file: "https://drive.google.com/drive/folders/17yplvC8leZncMnWs2w49AioaRoqrM_Hs"
+      },
+      prod_socinator: {
+        title: "Socinator – Automação Profissional",
+        file: "https://drive.google.com/drive/folders/1bt4ONHmg6ah_QvWKXAjkjQT0esS6G9jw"
+      },
+      prod_jarvee_pc: {
+        title: "Jarvee – Gerenciador de Redes (PC)",
+        file: "https://drive.google.com/drive/folders/1zziJUtoTyG7jaYAHRU6XeRdVtvYDdMX2"
+      },
+      prod_instabot: {
+        title: "Instabot Pro – Automação Instagram",
+        file: "https://drive.google.com/drive/folders/1uMAgTrE0LIHTiq0xK_Lc1Ua0VXIfZ94K"
+      },
+      prod_extractor: {
+        title: "Insta Extractor + Licença",
+        file: "https://drive.google.com/drive/folders/193VTdlaZseLVOZ5H0zCJa3Sdah6kpdlH"
+      }
+    };
+
+    const product = PRODUCTS[externalId];
+    if (!product) {
+      console.log("❌ Produto não mapeado:", externalId);
       return res.status(404).json({ error: "Product not mapped" });
     }
 
-    // customer email
-    const customerMeta = body?.data?.billing?.customer?.metadata || {};
-    const customerEmail = customerMeta.email;
-    const customerName = customerMeta.name || "Cliente";
+    // Dados do cliente
+    const customer = req.body?.data?.billing?.customer?.metadata || {};
+    const email = customer.email;
+    const name = customer.name || "Client";
 
-    if (!customerEmail) {
-      console.log("No customer email found in payload (cannot send). Customer meta:", customerMeta);
-      // respond 200 to avoid retries or respond 400 to let ABACATEPAY retry? We'll return 400 so you can see the failed attempt in dashboard.
+    if (!email) {
+      console.log("❌ webhook sem e-mail do cliente");
       return res.status(400).json({ error: "Missing customer email" });
     }
 
-    // Determine from email variable (supports FROM_EMAIL or EMAIL_FROM)
-    const fromEmail = process.env.FROM_EMAIL || process.env.EMAIL_FROM || process.env.EMAIL_FROM_ADDRESS;
-    const fromName = process.env.MAIL_FROM_NAME || process.env.MAIL_FROM || "Hubstore";
+    console.log("📧 Enviando para:", email);
 
-    if (!fromEmail) {
-      console.log("Sender FROM email not configured. Looked for FROM_EMAIL / EMAIL_FROM env vars.");
-      return res.status(500).json({ error: "Sender address not configured" });
-    }
-
-    // Prepare message
-    const msg = {
-      to: customerEmail,
-      from: `${fromName} <${fromEmail}>`,
-      subject: `Seu Produto: ${item.title}`,
+    // Enviar email pelo SendGrid
+    await sgMail.send({
+      to: email,
+      from: `${process.env.MAIL_FROM_NAME} <${process.env.FROM_EMAIL}>`,
+      subject: `Seu produto: ${product.title}`,
       html: `
-        <h2>Olá, ${customerName}!</h2>
-        <p>Seu pagamento foi aprovado e seu produto está liberado 🎉</p>
-        <p><b>Produto:</b> ${item.title}</p>
-        <p><b>Link de Download:</b> <a href="${item.file}" target="_blank">Clique aqui para baixar</a></p>
-        <p>Se o link for do Google Drive e pedir permissão, confirme no painel do Drive que o link está público/compartilhável.</p>
-        <br><p>— Hubstore Digital</p>
+        <h2>Olá, ${name}!</h2>
+        <p>Seu pagamento foi aprovado 🎉</p>
+
+        <p><b>Produto:</b> ${product.title}</p>
+        <p><b>Download:</b> <a href="${product.file}" target="_blank">Clique aqui para baixar</a></p>
+
+        <br>
+        <p>Obrigado por comprar na Hubstore!</p>
       `
-    };
+    });
 
-    console.log("Sending email to:", customerEmail, "from:", fromEmail);
+    console.log("✔ Email enviado com sucesso!");
 
-    const sendResult = await sgMail.send(msg);
-    console.log("SendGrid result:", sendResult);
+    return res.status(200).json({ ok: true });
 
-    return res.status(200).json({ ok: true, delivered: item.file });
   } catch (err) {
-    console.error("Unhandled webhook error:", err);
-    return res.status(500).json({ error: "internal_error", details: String(err) });
+    console.log("❌ ERRO NO WEBHOOK:", err);
+    return res.status(500).json({ error: "Internal Server Error", details: String(err) });
   }
 }
