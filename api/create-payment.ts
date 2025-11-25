@@ -1,12 +1,19 @@
 // /api/create-payment.ts
 import { VercelRequest, VercelResponse } from "@vercel/node";
-import fetch from "node-fetch"; // se o ambiente Vercel já tem fetch você pode remover esta linha
+import fetch from "node-fetch";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import { PRODUCTS } from "./products";
 
 const ORDERS_FILE = path.join("/tmp", "hubstore_orders.json");
+
+interface CreatePaymentRequest {
+  productId: string;
+  customerEmail: string;
+  customerName?: string;
+  data?: any;
+}
 
 function generateOrderId() {
   const now = Date.now().toString(36);
@@ -35,7 +42,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
 
-  const { productId, customerEmail, customerName } = req.body || {};
+  // TIP: tipar o body para evitar erros de TS durante build
+  const body = req.body as CreatePaymentRequest;
+
+  const { productId, customerEmail, customerName } = body || {};
 
   if (!productId || !PRODUCTS[productId]) {
     return res.status(400).json({ error: "productId inválido" });
@@ -47,11 +57,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const product = PRODUCTS[productId];
   const orderId = generateOrderId();
 
-  // Salva pedido local para reconciliação (teste)
   const orderObj = {
     orderId,
     productId,
-    externalId: product.externalId,
     product,
     customerEmail,
     customerName: customerName || null,
@@ -63,7 +71,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const HOST = process.env.HOST || "https://hubstore-theta.vercel.app";
   const webhookUrl = `${HOST}/api/abacatepay/webhook?webhookSecret=${process.env.WEBHOOK_SECRET}`;
 
-  // Payload conforme doc AbacatePay — incluí products[*].externalId
   const payload = {
     amount: product.price_cents,
     description: product.title,
@@ -104,20 +111,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       body: JSON.stringify(payload)
     });
 
-    const json = await resp.json();
+    const respJson = await resp.json();
 
     if (!resp.ok) {
-      console.error("Erro ao criar cobrança no AbacatePay:", resp.status, json);
-      return res.status(502).json({ error: "bad_gateway", details: json });
+      console.error("Erro ao criar cobrança no AbacatePay:", resp.status, respJson);
+      return res.status(502).json({ error: "bad_gateway", details: respJson });
     }
 
-    const paymentUrl = json?.data?.url || json?.data?.payment_url || null;
+    const paymentUrl = respJson?.data?.url || respJson?.data?.payment_url || null;
 
     return res.status(200).json({
       ok: true,
       orderId,
       product,
-      gateway: json,
+      gateway: respJson,
       paymentUrl
     });
   } catch (err) {
