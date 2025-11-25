@@ -1,42 +1,14 @@
-// api/webhook.ts
+// /api/webhook.ts
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { PRODUCTS } from './products';
 import sgMail from '@sendgrid/mail';
+import { PRODUCTS } from '../constants';
 
-// Configure a chave da API do SendGrid a partir das variáveis de ambiente
+// Configure a chave da API do SendGrid
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 } else {
   console.warn("SENDGRID_API_KEY não está definida. O envio de e-mails está desabilitado.");
 }
-
-// Helper para encontrar um valor em um objeto, tentando múltiplos caminhos comuns
-const findValue = (obj: any, key: string): string | null => {
-  const pathsToTry = [
-    [key],
-    ['data', key],
-    ['data', 'metadata', key],
-    ['metadata', key],
-    ['customer', key],
-    ['data', 'customer', key],
-  ];
-
-  for (const path of pathsToTry) {
-    let current = obj;
-    for (const part of path) {
-      if (current && typeof current === 'object' && part in current) {
-        current = current[part];
-      } else {
-        current = null;
-        break;
-      }
-    }
-    if (current !== null && current !== undefined) {
-      return String(current);
-    }
-  }
-  return null;
-};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -44,57 +16,60 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).send('Method Not Allowed');
   }
 
-  const event = req.body;
-  const webhookSecret = process.env.WEBHOOK_SECRET;
-
-  // 1. Validar o "secret" para garantir que a requisição é do AbacatePay
-  if (webhookSecret) {
-    const signature = req.headers['x-abacate-signature'] || findValue(event, 'secret');
-    if (signature !== webhookSecret) {
-      console.warn('Webhook secret inválido recebido. A requisição será ignorada.');
-      // Responde com sucesso para não indicar a falha ao gateway, mas não processa.
-      return res.status(200).json({ success: true, message: 'Invalid signature. Request ignored.' });
-    }
-  }
-
-  const status = findValue(event, 'status');
-  const chargeId = findValue(event, 'id') || findValue(event, 'charge_id') || 'N/A';
-  
-  // 2. Lidar com os diferentes status do pagamento
   try {
-    switch (status) {
-      case 'paid':
-      case 'charge.paid': // Status comum em alguns gateways
-        console.log(`Pedido ${chargeId} atualizado para: { status: "pago", dataPagamento: ${Date.now()} }`);
-        
-        // Lógica de envio do produto por e-mail
-        if (!process.env.SENDGRID_API_KEY || !process.env.EMAIL_FROM) {
-            console.error("Configuração de e-mail incompleta. Não é possível enviar o produto.");
-            break;
-        }
+    const event = req.body;
+    const webhookSecret = process.env.WEBHOOK_SECRET;
 
-        const email = findValue(event, 'customer_email') || findValue(event, 'email');
-        const productId = findValue(event, 'product_id') || findValue(event, 'external_reference');
+    // 1. Validar o secret para garantir que a requisição é legítima
+    const signature = req.headers['x-abacate-signature'] as string || req.query.secret as string;
+    if (webhookSecret && signature !== webhookSecret) {
+      console.warn('Webhook secret inválido recebido.');
+      return res.status(403).json({ success: false, message: 'Invalid signature.' });
+    }
+    
+    const eventType = event?.event;
+    console.log(`Webhook recebido: ${eventType}`);
 
-        if (!email || !productId) {
-          console.error(`Webhook 'paid' para ${chargeId} sem email ou productId. Email: ${email}, ProductID: ${productId}`);
-          break; // Sai do switch, mas ainda retorna sucesso
-        }
-        
-        const product = PRODUCTS.find(p => String(p.id) === String(productId));
-        if (!product) {
-          console.error(`Produto com ID ${productId} não encontrado.`);
-          break;
-        }
+    if (eventType === 'billing.paid') {
+      const billing = event?.data?.billing;
+      if (!billing) {
+        console.error('Payload de "billing.paid" sem a estrutura "data.billing".');
+        return res.status(400).json({ success: false, message: 'Payload inválido.' });
+      }
 
+      // Extrai dados do payload do AbacatePay
+      const customerEmail = billing.customer?.metadata?.email;
+      // Busca o ID do produto primeiro na metadata (enviado pela nossa API), senão no array de produtos.
+      const productId = billing.metadata?.product_id ?? billing.products?.[0]?.id;
+
+      if (!customerEmail || !productId) {
+        console.error(`Webhook 'billing.paid' sem email ou productId. Email: ${customerEmail}, ProductID: ${productId}`);
+        return res.status(400).json({ success: false, message: 'Dados do cliente ou produto ausentes.' });
+      }
+
+      // Encontra o produto na nossa única fonte de verdade
+      const product = PRODUCTS.find(p => String(p.id) === String(productId));
+
+      if (!product) {
+        console.error(`Produto com ID ${productId} não encontrado na nossa base de dados.`);
+        return res.status(200).json({ success: true, message: `Produto ${productId} não encontrado.` });
+      }
+      
+      if (!product.driveLink) {
+        console.error(`Produto com ID ${productId} não possui um link de download (driveLink).`);
+        return res.status(200).json({ success: true, message: `Produto ${productId} sem link de download.` });
+      }
+
+      // Envia o e-mail com o link de download se o SendGrid estiver configurado
+      if (process.env.SENDGRID_API_KEY && process.env.EMAIL_FROM) {
         const msg = {
-          to: email,
+          to: customerEmail,
           from: process.env.EMAIL_FROM,
-          subject: `✅ Seu pedido foi aprovado: ${product.name}`,
+          subject: `✅ Seu produto da HubStore está pronto: ${product.title}`,
           html: `
             <div style="font-family: Inter, system-ui, Arial; color: #e5e7eb; max-width: 600px; margin: auto; background-color: #0A0A0A; padding: 24px; border-radius: 12px; border: 1px solid #27272a;">
-              <h1 style="color: #34d399; font-size: 24px;">Pagamento Confirmado!</h1>
-              <p style="font-size: 16px; line-height: 1.6;">Olá! Seu pagamento para o produto <strong>${product.name}</strong> foi aprovado com sucesso.</p>
+              <h1 style="color: #34d399; font-size: 24px;">Pagamento Aprovado!</h1>
+              <p style="font-size: 16px; line-height: 1.6;">Olá! Seu pagamento para o produto <strong>${product.title}</strong> foi aprovado com sucesso.</p>
               <p style="font-size: 16px; line-height: 1.6;">Clique no botão abaixo para acessar seu conteúdo imediatamente:</p>
               <a href="${product.driveLink}" style="display: inline-block; background-color: #10b981; color: #ffffff; padding: 12px 24px; margin: 20px 0; text-decoration: none; border-radius: 8px; font-weight: bold;">Baixar Produto Agora</a>
               <p style="font-size: 14px; color: #9ca3af;">Se o botão não funcionar, copie e cole este link no seu navegador:</p>
@@ -106,26 +81,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         };
         
         await sgMail.send(msg);
-        console.log(`E-mail de entrega enviado para ${email} para o pedido ${chargeId}.`);
-        break;
-
-      case 'failed':
-      case 'charge.failed':
-        console.log(`Pedido ${chargeId} atualizado para: { status: "falhou" }`);
-        break;
-
-      case 'pending':
-        console.log(`Pedido ${chargeId} atualizado para: { status: "pendente" }`);
-        break;
-
-      default:
-        console.log(`Webhook com status não mapeado ('${status}') recebido para o pedido ${chargeId}.`);
-        break;
+        console.log(`E-mail de entrega para o produto "${product.title}" enviado para ${customerEmail}.`);
+      } else {
+        console.warn("Envio de e-mail desabilitado. Verifique as variáveis de ambiente SENDGRID_API_KEY e EMAIL_FROM.");
+      }
     }
-  } catch (error) {
-    console.error(`Erro crítico ao processar webhook para o pedido ${chargeId}:`, error);
-  }
+    
+    // Sempre retorna sucesso para o AbacatePay
+    return res.status(200).json({ success: true });
 
-  // 6. Retornar sempre { success: true } para o AbacatePay
-  return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error(`Erro crítico ao processar webhook:`, error);
+    return res.status(200).json({ success: true, error: 'Internal server error occurred.' });
+  }
 }

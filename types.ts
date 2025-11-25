@@ -8,4 +8,5 @@ export interface Product {
     price: number;
     imageUrl: string;
     checkoutUrlCard: string;
+    driveLink: string;
 }
