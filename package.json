@@ -17,7 +17,8 @@
     "@sendgrid/mail": "^8.1.6",
     "crypto": "^1.0.1",
     "path": "^0.12.7",
-    "fs": "^0.0.1-security"
+    "fs": "^0.0.1-security",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
