@@ -98,7 +98,7 @@ export default function HeroBlackFriday({ navigateTo }: HeroBlackFridayProps) {
                     
                     <div className="my-4 flex flex-col items-center gap-1">
                         <p className="text-2xl font-semibold text-gray-500 line-through">R$ 99,90</p>
-                        <p className="text-6xl font-extrabold text-neon-cyan" style={{ textShadow: '0 0 15px #00FFFF' }}>R$29,90</p>
+                        <p className="text-6xl font-extrabold text-neon-cyan" style={{ textShadow: '0 0 15px #00FFFF' }}>R$9,90</p>
                     </div>
                     
                     <button

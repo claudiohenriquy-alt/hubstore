@@ -9,13 +9,6 @@ export type Product = {
 };
 
 export const PRODUCTS: Record<string, Product> = {
-  "product-001": {
-    id: "product-001",
-    externalId: "prod_robo_ai",
-    title: "Robô AI-Assist",
-    price_cents: 1990,
-    file: "https://drive.google.com/drive/folders/1GyCxNqQcufTzNnnNXrQnZ48peo4ReNYp?usp=drive_link"
-  },
   "product-002": {
     id: "product-002",
     externalId: "prod_fornecedores_premium",
@@ -23,7 +16,14 @@ export const PRODUCTS: Record<string, Product> = {
     price_cents: 1490,
     file: "https://drive.google.com/file/d/1ttquBeNbiulk_b7qGcvh-xlIziM2Et61/view?usp=drive_link"
   },
-  "product-003": {
+  "product-001": {
+    id: "product-001",
+    externalId: "prod_robo_ai",
+    title: "Robô AI-Assist",
+    price_cents: 990,
+    file: "https://drive.google.com/drive/folders/1GyCxNqQcufTzNnnNXrQnZ48peo4ReNYp?usp=drive_link"
+  },
+    "product-003": {
     id: "product-003",
     externalId: "prod_catalogo_exclusivos",
     title: "Catálogo de Produtos Exclusivos",

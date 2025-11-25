@@ -1,17 +1,7 @@
 import { Product } from './types';
 
 export const PRODUCTS: Product[] = [
-    {
-        id: 1,
-        title: "Robo AI-Assist",
-        category: "Automação - IA",
-        shortDescription: "Otimize suas vendas e atendimento com nosso assistente de IA.",
-        longDescription: "Nosso Robo AI-Assist é uma ferramenta de automação inteligente projetada para maximizar sua eficiência. Ele gerencia interações com clientes, qualifica leads e fecha vendas, tudo no piloto automático. Perfeito para escalar seu negócio digital sem aumentar a carga de trabalho.",
-        price: 29.90,
-        imageUrl: "https://images.unsplash.com/photo-1677756119517-756a188d2d94?w=800&q=80",
-        checkoutUrlCard: "https://www.abacatepay.com/pay/bill_UXUpcDyFJMxyWsNYuQsWWrG4"
-    },
-    {
+      {
         id: 2,
         title: "Lista de Fornecedores Premium",
         category: "E-commerce",
@@ -21,7 +11,17 @@ export const PRODUCTS: Product[] = [
         imageUrl: "https://i.imgur.com/1Ta8BYg.png",
         checkoutUrlCard: "https://www.abacatepay.com/pay/bill_UenRDqdfhqzSGBWUC0uKbkz2"
     },
-    {
+      {
+        id: 1,
+        title: "Robo AI-Assist",
+        category: "Automação - IA",
+        shortDescription: "Otimize suas vendas e atendimento com nosso assistente de IA.",
+        longDescription: "Nosso Robo AI-Assist é uma ferramenta de automação inteligente projetada para maximizar sua eficiência. Ele gerencia interações com clientes, qualifica leads e fecha vendas, tudo no piloto automático. Perfeito para escalar seu negócio digital sem aumentar a carga de trabalho.",
+        price: 9.90,
+        imageUrl: "https://images.unsplash.com/photo-1677756119517-756a188d2d94?w=800&q=80",
+        checkoutUrlCard: "https://abacatepay.com/pay/bill_0Fk6FxfXk1PBwFSNRNLpyKfm"
+    },
+      {
         id: 3,
         title: "Catálogo de Produtos Exclusivos",
         category: "Conteúdo Digital",
