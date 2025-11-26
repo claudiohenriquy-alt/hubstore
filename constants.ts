@@ -21,15 +21,15 @@ export const PRODUCTS: Product[] = [
         imageUrl: "https://images.unsplash.com/photo-1677756119517-756a188d2d94?w=800&q=80",
         checkoutUrlCard: "https://abacatepay.com/pay/bill_e3epAPSrSHSzXsza4uB2qaQQ"
     },
-      {
-        id: 3,
-        title: "Catálogo de Produtos Exclusivos",
-        category: "Conteúdo Digital",
-        shortDescription: "Um catálogo com produtos de alta demanda para revenda.",
-        longDescription: "Receba um catálogo completo com produtos digitais e físicos prontos para revenda. São itens de alta conversão, validados no mercado, para você começar a vender imediatamente. Inclui descrições, imagens e estratégias de venda.",
+    {
+        id: 9,
+        title: "Instabot Pro – Automação Instagram",
+        category: "Instagram Tools",
+        shortDescription: "Ganhe seguidores reais e aumente seu engajamento automaticamente.",
+        longDescription: "O Instabot Pro automatiza completamente o Instagram: segue, curte, comenta, envia mensagens, segmenta públicos e interage com potenciais clientes no piloto automático. Um dos bots mais eficientes para quem trabalha com vendas, moda, estética, marketing, tráfego pago e influência digital.",
         price: 12.90,
-        imageUrl: "https://images.unsplash.com/photo-1483058712412-4245e9b90334?w=800&q=80",
-        checkoutUrlCard: "https://www.abacatepay.com/pay/bill_Q6pK1dCQjbCmtTmqkYsXNmce"
+        imageUrl: "https://images.unsplash.com/photo-1611262588024-d12430b98920?w=800&q=80",
+        checkoutUrlCard: "https://www.abacatepay.com/pay/bill_1K6qbFfzzRCNufKdYK3bkpDD"
     },
     {
         id: 4,
@@ -42,6 +42,16 @@ export const PRODUCTS: Product[] = [
         checkoutUrlCard: "https://www.abacatepay.com/pay/bill_rWsaUeHhAU2YWzJCAx4FuJJZ"
     },
     {
+        id: 3,
+        title: "Catálogo de Produtos Exclusivos",
+        category: "Conteúdo Digital",
+        shortDescription: "Um catálogo com produtos de alta demanda para revenda.",
+        longDescription: "Receba um catálogo completo com produtos digitais e físicos prontos para revenda. São itens de alta conversão, validados no mercado, para você começar a vender imediatamente. Inclui descrições, imagens e estratégias de venda.",
+        price: 12.90,
+        imageUrl: "https://images.unsplash.com/photo-1483058712412-4245e9b90334?w=800&q=80",
+        checkoutUrlCard: "https://www.abacatepay.com/pay/bill_Q6pK1dCQjbCmtTmqkYsXNmce"
+    },
+        {
         id: 5,
         title: "Jarvee – Automação Completa",
         category: "Ferramenta Digital",
@@ -81,17 +91,7 @@ export const PRODUCTS: Product[] = [
         imageUrl: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&q=80",
         checkoutUrlCard: "https://www.abacatepay.com/pay/bill_jsEDARKXN3MdnrfQEwNkkyMf"
     },
-    {
-        id: 9,
-        title: "Instabot Pro – Automação Instagram",
-        category: "Instagram Tools",
-        shortDescription: "Ganhe seguidores reais e aumente seu engajamento automaticamente.",
-        longDescription: "O Instabot Pro automatiza completamente o Instagram: segue, curte, comenta, envia mensagens, segmenta públicos e interage com potenciais clientes no piloto automático. Um dos bots mais eficientes para quem trabalha com vendas, moda, estética, marketing, tráfego pago e influência digital.",
-        price: 12.90,
-        imageUrl: "https://images.unsplash.com/photo-1611262588024-d12430b98920?w=800&q=80",
-        checkoutUrlCard: "https://www.abacatepay.com/pay/bill_1K6qbFfzzRCNufKdYK3bkpDD"
-    },
-    {
+        {
         id: 10,
         title: "Insta Extractor + Licença",
         category: "Extração de Dados",
