@@ -1,0 +1,5 @@
+{
+  "name": "HubStore",
+  "description": "Plataforma moderna de vitrine digital com integração de pagamentos (PIX e Cartão) via AbacatePay.",
+  "requestFramePermissions": []
+}
