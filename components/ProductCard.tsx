@@ -1,55 +1,52 @@
+
 import React from 'react';
 import { Product } from '../types';
 
 interface ProductCardProps {
-  product: Product;
-  onClick: (product: Product) => void;
+    product: Product;
+    onSelect: (product: Product) => void;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(price);
-  };
+const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect }) => {
+    const formattedPrice = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+    }).format(product.price);
 
-  return (
-    <div 
-      className="group relative bg-brand-card rounded-xl overflow-hidden border border-white/5 hover:border-brand-neon/50 transition-all duration-500 cursor-pointer hover:shadow-neon hover:-translate-y-2"
-      onClick={() => onClick(product)}
-    >
-      <div className="aspect-w-4 aspect-h-3 w-full overflow-hidden bg-brand-surface relative h-64">
-        <img
-          src={product.images[0]}
-          alt={product.title}
-          className="h-full w-full object-cover object-center group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-brand-card via-transparent to-transparent opacity-90"></div>
-        
-        {/* Badge Exemplo */}
-        <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-xs px-2 py-1 rounded border border-white/10">
-          Novo
+    return (
+        <div 
+            className="group bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden transition-all duration-300 hover:border-zinc-700 hover:scale-[1.02] flex flex-col cursor-pointer h-full"
+            onClick={() => onSelect(product)}
+        >
+            <div className="relative overflow-hidden">
+                <img 
+                    src={product.imageUrl} 
+                    alt={product.title}
+                    className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute top-3 right-3 bg-zinc-800/80 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full border border-zinc-700">
+                    Novo
+                </div>
+            </div>
+            <div className="p-5 flex flex-col flex-grow">
+                <h3 className="text-lg font-bold text-white">{product.title}</h3>
+                <p className="text-xs text-gray-400 font-semibold tracking-wider uppercase mt-1">{product.category}</p>
+                <p className="text-sm text-gray-400 mt-3 flex-grow min-h-[60px]">{product.shortDescription}</p>
+                
+                <hr className="border-zinc-800 my-4" />
+
+                <div className="flex justify-between items-center">
+                    <span className="text-xl font-bold text-white">{formattedPrice}</span>
+                    <button 
+                        className="bg-white text-black font-semibold text-sm py-2 px-5 rounded-md hover:bg-gray-200 transition-colors"
+                        onClick={(e) => { e.stopPropagation(); onSelect(product); }}
+                    >
+                        Comprar
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
-      
-      <div className="p-5 relative">
-        <div className="mb-3">
-          <h3 className="text-lg font-bold text-white mb-1 line-clamp-1 group-hover:text-brand-neon transition-colors">{product.title}</h3>
-          <p className="text-xs text-gray-500 uppercase tracking-wider">Categoria Digital</p>
-        </div>
-        
-        <p className="text-sm text-gray-400 mb-5 line-clamp-2 font-light leading-relaxed border-l-2 border-white/5 pl-3">
-          {product.shortDescription}
-        </p>
-        
-        <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
-          <span className="text-xl font-bold text-white tracking-tight">{formatPrice(product.price)}</span>
-          <button className="bg-white text-black hover:bg-brand-neon hover:text-black px-5 py-2 rounded-lg text-sm font-bold transition-all duration-300 shadow-[0_0_10px_rgba(255,255,255,0.1)] hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] transform group-hover:scale-105">
-            Comprar
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
+
+export default ProductCard;
