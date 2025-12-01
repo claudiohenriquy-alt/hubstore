@@ -18,7 +18,8 @@
     "crypto": "^1.0.1",
     "path": "^0.12.7",
     "fs": "^0.0.1-security",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "raw-body": "^3.0.2"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

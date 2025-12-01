@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { Product } from '../types';
 import { PRODUCTS } from '../constants';
 import ProductCard from '../components/ProductCard';
-import HeroBlackFriday from "../components/HeroBlackFriday";
+import HeroSection from "../components/HeroSection";
 import { Page } from '../App';
 import GuaranteeSection from '../components/GuaranteeSection';
 
@@ -14,7 +15,7 @@ interface HomePageProps {
 const HomePage: React.FC<HomePageProps> = ({ navigateTo, openModal }) => {
     return (
         <>
-            <HeroBlackFriday navigateTo={navigateTo} />
+            <HeroSection navigateTo={navigateTo} />
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <section id="produtos" className="py-20">
                     <div className="flex justify-between items-center mb-10">
